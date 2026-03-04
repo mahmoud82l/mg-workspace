@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Space - Mahmoud & Nada</title>
+    <title>Work Space - Mahmoud Gamal</title>
     <style>
         :root {
             --bg-color: #0d1117; 
@@ -213,14 +213,14 @@
     <header>
         <button class="admin-lock" onclick="toggleAdmin()" id="lockBtn" title="تبديل وضع الآدمن/الطالب">🔒</button>
         <h1>Work Space</h1>
-        <p>مستوي ثاني الترم الثاني - محاضرات وملخصات</p>
+        <p>دفعة 2026 - محاضرات وملخصات</p>
     </header>
 
     <div class="container">
         
         <div id="homeView">
             <div class="admin-panel admin-only" id="adminFolderPanel">
-                <h3>أدوات الأدمن (Mahmoud & Nada) 👑</h3>
+                <h3>أدوات الأدمن (Mahmoud Gamal) 👑</h3>
                 <div class="input-group">
                     <input type="text" id="subjectName" placeholder="اسم المادة (مثال: برمجة، رياضيات)">
                     <button onclick="addSubject()">➕ إضافة مادة</button>
@@ -254,7 +254,7 @@
     </div>
 
     <footer>
-        &copy; 2026 <strong>Mahmoud & Nada</strong>. All Rights Reserved.<br>
+        &copy; 2026 <strong>Mahmoud Gamal</strong>. All Rights Reserved.<br>
         <span style="font-size: 12px; opacity: 0.5;">Work Space Lecture Portal</span>
     </footer>
 
@@ -282,6 +282,7 @@
         let isFirstLoad = true;
         let previousTotalLinks = 0;
         
+        // جلب وقت آخر زيارة للطالب، لو مفيش بنعمله 0
         let lastVisitTimestamp = localStorage.getItem('workSpaceLastVisit') || 0;
 
         function toggleAdmin() {
@@ -302,7 +303,7 @@
                 isAdmin = true;
                 document.getElementById('lockBtn').innerHTML = "🔓";
                 document.getElementById('lockBtn').style.color = "var(--success)";
-                alert("أهلاً بيكم! 👑 أدوات التحكم اتفتحت لـ Mahmoud & Nada.");
+                alert("أهلاً بيك يا عالمي! 👑 أدوات التحكم اتفتحت.");
                 
                 let adminElements = document.querySelectorAll('.admin-only');
                 adminElements.forEach(el => el.style.display = 'block');
@@ -313,10 +314,11 @@
             }
         }
 
+        // جلب البيانات ومراقبة التحديثات
         db.collection("subjects").onSnapshot((snapshot) => {
             subjects = [];
             let currentTotalLinks = 0;
-            let missedUpdates = [];
+            let missedUpdates = []; // مصفوفة لتجميع الحاجات اللي فاتت الطالب
 
             snapshot.forEach((doc) => {
                 let data = doc.data();
@@ -325,6 +327,7 @@
                 if(data.links) {
                     currentTotalLinks += data.links.length;
                     
+                    // التشييك على المحاضرات اللي نزلت وهو غايب
                     data.links.forEach(link => {
                         if(link.addedAt && link.addedAt > lastVisitTimestamp && lastVisitTimestamp != 0) {
                             missedUpdates.push(`- في مادة (${data.name}): ${link.title}`);
@@ -333,15 +336,19 @@
                 }
             });
 
+            // لو دي أول تحميل للموقع، وفي حاجات نزلت وهو غايب، نطلعهاله
             if (isFirstLoad) {
                 if (missedUpdates.length > 0) {
                     alert("🚨 أهلاً بيك! في محاضرات نزلت وإنت قافل الموقع:\n\n" + missedUpdates.join("\n"));
                 }
+                // نحدث وقت آخر زيارة للوقت الحالي عشان المرة الجاية
                 localStorage.setItem('workSpaceLastVisit', Date.now());
             } 
+            // لو الموقع مفتوح قدامه، وفي حاجة نزلت دلوقتي حالا، نضرب الإنذار
             else if (!isFirstLoad && currentTotalLinks > previousTotalLinks) {
                 document.getElementById('alarmSound').play().catch(e => console.log('Autoplay blocked'));
                 alert("🚨 تم إضافة محاضرة جديدة على الموقع دلوقتي! 🚨");
+                // بنحدث الوقت كمان عشان ماتظهرلوش رسالة الغياب تاني لو عمل ريفرش
                 localStorage.setItem('workSpaceLastVisit', Date.now());
             }
 
@@ -434,6 +441,7 @@
                 let eyeColor = isViewed ? 'var(--primary)' : 'white';
                 let iconId = `eye-${currentSubjectId}-${index}`;
 
+                // نظهر شارة "جديد" لو اللينك اتضاف بعد آخر زيارة للطالب
                 let newBadge = (link.addedAt && link.addedAt > lastVisitTimestamp && lastVisitTimestamp != 0) ? `<span class="new-badge">جديد 🆕</span>` : '';
 
                 const card = document.createElement('div');
@@ -461,6 +469,7 @@
 
             const subjectRef = db.collection("subjects").doc(currentSubjectId);
             
+            // ضفنا هنا الوقت (addedAt) عشان نقدر نعرف مين جديد ومين قديم
             subjectRef.update({
                 links: firebase.firestore.FieldValue.arrayUnion({ 
                     title: title, 
