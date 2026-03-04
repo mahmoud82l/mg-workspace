@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Space - Mahmoud Gamal</title>
+    <style>
+        :root {
+            --bg-color: #0d1117; 
+            --card-bg: #161b22;
+            --primary: #58a6ff;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --danger: #f85149;
+            --success: #2ea043;
+            --warning: #d29922;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 25px 0;
+            text-align: center;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid #30363d;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        header p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px; }
+
+        .admin-lock {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            transition: 0.3s;
+        }
+        .admin-lock:hover { color: white; transform: scale(1.1); }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .admin-panel {
+            display: none; 
+            background-color: rgba(46, 160, 67, 0.1);
+            border: 1px solid var(--success);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .admin-panel h3 { margin-top: 0; color: var(--success); }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex-grow: 1;
+            padding: 12px;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        input:focus { border-color: var(--primary); }
+
+        button {
+            padding: 12px 20px;
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        button:hover { background-color: #79c0ff; }
+
+        button.danger-btn {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        button.danger-btn:hover { background-color: var(--danger); color: white; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .subject-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #30363d;
+            transition: 0.2s;
+            position: relative;
+        }
+        .subject-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .subject-icon { font-size: 40px; margin-bottom: 10px; }
+        
+        #insideFolder { display: none; }
+        
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 15px;
+        }
+
+        .item-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-right: 4px solid var(--primary);
+        }
+
+        .link-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .eye-icon {
+            font-size: 22px;
+            transition: 0.3s;
+        }
+
+        .item-card a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .item-card a:hover { color: var(--primary); }
+
+        .new-badge {
+            background-color: var(--warning);
+            color: #000;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .admin-only { display: none; }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            border-top: 1px solid #30363d;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="alarmSound" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8b8f722cb.mp3?filename=red-alert-ambar-alert-warning-siren-100052.mp3" preload="auto"></audio>
+
+    <header>
+        <button class="admin-lock" onclick="toggleAdmin()" id="lockBtn" title="تبديل وضع الآدمن/الطالب">🔒</button>
+        <h1>Work Space</h1>
+        <p>دفعة 2026 - محاضرات وملخصات</p>
+    </header>
+
+    <div class="container">
+        
+        <div id="homeView">
+            <div class="admin-panel admin-only" id="adminFolderPanel">
+                <h3>أدوات الأدمن (Mahmoud Gamal) 👑</h3>
+                <div class="input-group">
+                    <input type="text" id="subjectName" placeholder="اسم المادة (مثال: برمجة، رياضيات)">
+                    <button onclick="addSubject()">➕ إضافة مادة</button>
+                </div>
+            </div>
+
+            <h3 style="color: white; border-bottom: 2px solid #30363d; padding-bottom: 10px;">📚 المواد الدراسية</h3>
+            <div class="grid" id="subjectsGrid">
+                <p style="text-align: center; color: #8b949e; width: 100%;">جاري تحميل المحاضرات...</p>
+            </div>
+        </div>
+
+        <div id="insideFolder">
+            <div class="header-actions">
+                <h2 id="currentSubjectTitle" style="color: white; margin: 0;">اسم المادة</h2>
+                <button onclick="goBack()" style="background-color: #30363d; color: white;">🔙 رجوع</button>
+            </div>
+
+            <div class="admin-panel admin-only" id="adminLinksPanel">
+                <h3 style="margin-bottom: 15px;">➕ إضافة محاضرة للمادة دي</h3>
+                <div class="input-group">
+                    <input type="text" id="linkTitle" placeholder="عنوان المحاضرة">
+                    <input type="url" id="linkUrl" placeholder="رابط المحاضرة (يوتيوب، درايف، الخ)">
+                    <button onclick="addLink()">حفظ الرابط</button>
+                </div>
+            </div>
+
+            <div id="linksList"></div>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 <strong>Mahmoud Gamal</strong>. All Rights Reserved.<br>
+        <span style="font-size: 12px; opacity: 0.5;">Work Space Lecture Portal</span>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyABSlC3WQDIBARoaQbV9XBAXC5Kull6jH8",
+            authDomain: "work-space-8e87e.firebaseapp.com",
+            projectId: "work-space-8e87e",
+            storageBucket: "work-space-8e87e.firebasestorage.app",
+            messagingSenderId: "907214357711",
+            appId: "1:907214357711:web:086e46dd6d4e74bac863ba",
+            measurementId: "G-T5TQ3VK93R"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let isAdmin = false;
+        let subjects = [];
+        let currentSubjectId = null;
+        
+        let isFirstLoad = true;
+        let previousTotalLinks = 0;
+        
+        // جلب وقت آخر زيارة للطالب، لو مفيش بنعمله 0
+        let lastVisitTimestamp = localStorage.getItem('workSpaceLastVisit') || 0;
+
+        function toggleAdmin() {
+            if(isAdmin) {
+                if(confirm("عايز تخرج من وضع الآدمن وترجع كطالب مشاهد؟")) {
+                    isAdmin = false;
+                    document.getElementById('lockBtn').innerHTML = "🔒";
+                    document.getElementById('lockBtn').style.color = "var(--text-muted)";
+                    let adminElements = document.querySelectorAll('.admin-only');
+                    adminElements.forEach(el => el.style.display = 'none');
+                    if(currentSubjectId) renderLinks(); else renderSubjects();
+                }
+                return;
+            }
+            
+            let pass = prompt("أدخل كلمة المرور الخاصة بالآدمن:");
+            if(pass === "admin@2026") { 
+                isAdmin = true;
+                document.getElementById('lockBtn').innerHTML = "🔓";
+                document.getElementById('lockBtn').style.color = "var(--success)";
+                alert("أهلاً بيك يا عالمي! 👑 أدوات التحكم اتفتحت.");
+                
+                let adminElements = document.querySelectorAll('.admin-only');
+                adminElements.forEach(el => el.style.display = 'block');
+                
+                if(currentSubjectId) renderLinks(); else renderSubjects();
+            } else {
+                if(pass !== null) alert("كلمة المرور غلط يا صاحبي!");
+            }
+        }
+
+        // جلب البيانات ومراقبة التحديثات
+        db.collection("subjects").onSnapshot((snapshot) => {
+            subjects = [];
+            let currentTotalLinks = 0;
+            let missedUpdates = []; // مصفوفة لتجميع الحاجات اللي فاتت الطالب
+
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                subjects.push({ id: doc.id, ...data });
+                
+                if(data.links) {
+                    currentTotalLinks += data.links.length;
+                    
+                    // التشييك على المحاضرات اللي نزلت وهو غايب
+                    data.links.forEach(link => {
+                        if(link.addedAt && link.addedAt > lastVisitTimestamp && lastVisitTimestamp != 0) {
+                            missedUpdates.push(`- في مادة (${data.name}): ${link.title}`);
+                        }
+                    });
+                }
+            });
+
+            // لو دي أول تحميل للموقع، وفي حاجات نزلت وهو غايب، نطلعهاله
+            if (isFirstLoad) {
+                if (missedUpdates.length > 0) {
+                    alert("🚨 أهلاً بيك! في محاضرات نزلت وإنت قافل الموقع:\n\n" + missedUpdates.join("\n"));
+                }
+                // نحدث وقت آخر زيارة للوقت الحالي عشان المرة الجاية
+                localStorage.setItem('workSpaceLastVisit', Date.now());
+            } 
+            // لو الموقع مفتوح قدامه، وفي حاجة نزلت دلوقتي حالا، نضرب الإنذار
+            else if (!isFirstLoad && currentTotalLinks > previousTotalLinks) {
+                document.getElementById('alarmSound').play().catch(e => console.log('Autoplay blocked'));
+                alert("🚨 تم إضافة محاضرة جديدة على الموقع دلوقتي! 🚨");
+                // بنحدث الوقت كمان عشان ماتظهرلوش رسالة الغياب تاني لو عمل ريفرش
+                localStorage.setItem('workSpaceLastVisit', Date.now());
+            }
+
+            previousTotalLinks = currentTotalLinks;
+            isFirstLoad = false;
+            
+            if(currentSubjectId) renderLinks(); else renderSubjects();
+        });
+
+        function renderSubjects() {
+            const grid = document.getElementById('subjectsGrid');
+            grid.innerHTML = '';
+
+            if(subjects.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; width: 100%;">لسه مفيش مواد اتضافت.</p>';
+                return;
+            }
+
+            subjects.forEach((subject) => {
+                let linksCount = subject.links ? subject.links.length : 0;
+                let deleteBtn = isAdmin ? `<button class="danger-btn admin-only" style="display:block; margin-top:15px; width:100%;" onclick="event.stopPropagation(); deleteSubject('${subject.id}')">حذف المادة</button>` : '';
+
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.onclick = () => openSubject(subject.id, subject.name);
+                card.innerHTML = `
+                    <div class="subject-icon">📁</div>
+                    <div style="font-size: 18px; font-weight: bold; color: white;">${subject.name}</div>
+                    <div style="font-size: 12px; color: #8b949e; margin-top: 5px;">${linksCount} محاضرات</div>
+                    ${deleteBtn}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addSubject() {
+            const nameInput = document.getElementById('subjectName');
+            const name = nameInput.value.trim();
+            if(!name) { alert("اكتب اسم المادة الأول!"); return; }
+
+            db.collection("subjects").add({ name: name, links: [] }).then(() => { nameInput.value = ''; });
+        }
+
+        function deleteSubject(id) {
+            if(confirm('متأكد إنك عايز تحذف المادة دي بكل محاضراتها؟')) {
+                db.collection("subjects").doc(id).delete();
+            }
+        }
+
+        function openSubject(id, name) {
+            currentSubjectId = id;
+            document.getElementById('homeView').style.display = 'none';
+            document.getElementById('insideFolder').style.display = 'block';
+            document.getElementById('currentSubjectTitle').textContent = '📁 ' + name;
+            renderLinks();
+        }
+
+        function goBack() {
+            currentSubjectId = null;
+            document.getElementById('insideFolder').style.display = 'none';
+            document.getElementById('homeView').style.display = 'block';
+            renderSubjects();
+        }
+
+        function markAsViewed(url, iconId) {
+            let viewed = JSON.parse(localStorage.getItem('viewedLinks')) || [];
+            if(!viewed.includes(url)) {
+                viewed.push(url);
+                localStorage.setItem('viewedLinks', JSON.stringify(viewed));
+                document.getElementById(iconId).style.color = 'var(--primary)'; 
+            }
+        }
+
+        function renderLinks() {
+            const list = document.getElementById('linksList');
+            list.innerHTML = '';
+            
+            const currentSubject = subjects.find(s => s.id === currentSubjectId);
+            if(!currentSubject || !currentSubject.links || currentSubject.links.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#8b949e;">لسه مفيش محاضرات نزلت في المادة دي.</p>';
+                return;
+            }
+
+            let viewedLinks = JSON.parse(localStorage.getItem('viewedLinks')) || [];
+
+            currentSubject.links.forEach((link, index) => {
+                let deleteBtn = isAdmin ? `<button class="danger-btn admin-only" onclick="deleteLink(${index})">حذف</button>` : '';
+                
+                let isViewed = viewedLinks.includes(link.url);
+                let eyeColor = isViewed ? 'var(--primary)' : 'white';
+                let iconId = `eye-${currentSubjectId}-${index}`;
+
+                // نظهر شارة "جديد" لو اللينك اتضاف بعد آخر زيارة للطالب
+                let newBadge = (link.addedAt && link.addedAt > lastVisitTimestamp && lastVisitTimestamp != 0) ? `<span class="new-badge">جديد 🆕</span>` : '';
+
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="link-wrapper">
+                        <span id="${iconId}" class="eye-icon" style="color: ${eyeColor};">👁️‍🗨️</span>
+                        <a href="${link.url}" target="_blank" onclick="markAsViewed('${link.url}', '${iconId}')">${link.title}</a>
+                        ${newBadge}
+                    </div>
+                    ${deleteBtn}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function addLink() {
+            const titleInput = document.getElementById('linkTitle');
+            const urlInput = document.getElementById('linkUrl');
+            let title = titleInput.value.trim();
+            let url = urlInput.value.trim();
+
+            if(!title || !url) { alert("اكتب عنوان المحاضرة والرابط بتاعها!"); return; }
+            if(!url.startsWith('http')) { url = 'https://' + url; }
+
+            const subjectRef = db.collection("subjects").doc(currentSubjectId);
+            
+            // ضفنا هنا الوقت (addedAt) عشان نقدر نعرف مين جديد ومين قديم
+            subjectRef.update({
+                links: firebase.firestore.FieldValue.arrayUnion({ 
+                    title: title, 
+                    url: url,
+                    addedAt: Date.now() 
+                })
+            }).then(() => {
+                titleInput.value = '';
+                urlInput.value = '';
+            });
+        }
+
+        function deleteLink(linkIndex) {
+            if(confirm('هتحذف المحاضرة دي؟')) {
+                const currentSubject = subjects.find(s => s.id === currentSubjectId);
+                const linkToRemove = currentSubject.links[linkIndex];
+
+                db.collection("subjects").doc(currentSubjectId).update({
+                    links: firebase.firestore.FieldValue.arrayRemove(linkToRemove)
+                });
+            }
+        }
+    </script>
+</body>
+</html>
