@@ -12,6 +12,7 @@
             --bg-color: #0d1117; --card-bg: #161b22; --primary: #58a6ff;
             --text-main: #c9d1d9; --text-muted: #8b949e; --danger: #f85149;
             --success: #2ea043; --warning: #d29922; --gold: #ffd700;
+            --silver: #C0C0C0; --bronze: #CD7F32;
         }
         body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
@@ -25,22 +26,32 @@
         .container { width: 92%; max-width: 900px; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; }
 
         /* الشريط الجانبي */
-        .sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background-color: #0d1117; border-left: 2px solid var(--primary); z-index: 3000; transition: right 0.4s ease; box-shadow: -5px 0 20px rgba(0,0,0,0.8); padding: 20px; overflow-y: auto; text-align: right; }
+        .sidebar { position: fixed; top: 0; right: -360px; width: 340px; height: 100%; background-color: #0d1117; border-left: 2px solid var(--primary); z-index: 3000; transition: right 0.4s ease; box-shadow: -5px 0 20px rgba(0,0,0,0.8); padding: 20px; overflow-y: auto; text-align: right; }
         .sidebar.open { right: 0; }
         .close-sidebar { color: var(--danger); font-size: 30px; cursor: pointer; float: left; }
         
         .sidebar-auth { background: #1c2128; padding: 15px; border-radius: 12px; margin: 40px 0 20px 0; border: 1px solid var(--primary); text-align: center; }
         .login-btn-side { width: 100%; background: #fff; color: #000; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .user-profile-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .user-profile-side img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--primary); }
+        .user-profile-side img { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
 
         .sidebar-section { margin-bottom: 30px; }
         .sidebar-title { color: var(--primary); border-bottom: 1px solid #333; padding-bottom: 8px; font-size: 18px; margin-bottom: 15px; }
 
-        .leaderboard-item { display: flex; justify-content: space-between; align-items: center; background: #1c2128; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-right: 3px solid transparent; }
-        .leaderboard-item.top { border-right-color: var(--gold); background: rgba(255, 215, 0, 0.05); }
-        .player-info { display: flex; align-items: center; gap: 8px; }
-        .player-info img { width: 25px; height: 25px; border-radius: 50%; }
+        /* جدول الدحيحة الجديد */
+        .lb-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #161b22; border-radius: 8px; overflow: hidden; }
+        .lb-table th { background: #1c2128; color: var(--primary); padding: 10px 5px; border-bottom: 2px solid #30363d; }
+        .lb-table td { padding: 8px 5px; border-bottom: 1px solid #30363d; text-align: center; vertical-align: middle; }
+        .lb-table tr:hover { background: rgba(88, 166, 255, 0.05); }
+        
+        .lb-name { display: flex; align-items: center; gap: 8px; text-align: right; justify-content: flex-start; padding-right: 5px; }
+        .lb-name img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; transition: 0.3s; }
+        
+        /* إطارات الأبطال */
+        .rank-1 .lb-name img { border: 2px solid var(--gold); box-shadow: 0 0 10px var(--gold); transform: scale(1.1); }
+        .rank-2 .lb-name img { border: 2px solid var(--silver); box-shadow: 0 0 8px var(--silver); transform: scale(1.05); }
+        .rank-3 .lb-name img { border: 2px solid var(--bronze); box-shadow: 0 0 8px var(--bronze); }
+        .rank-1 { background: rgba(255, 215, 0, 0.05); }
 
         .history-item { background: #161b22; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-right: 3px solid var(--primary); position: relative; }
         .del-hist { position: absolute; left: 10px; top: 10px; color: var(--danger); cursor: pointer; font-size: 14px; }
@@ -60,8 +71,12 @@
 
         /* المودال */
         .modal { display: none; position: fixed; z-index: 4000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card-bg); margin: 2% auto; padding: 20px; border-radius: 15px; width: 95%; max-width: 850px; position: relative; border: 1px solid var(--primary); }
+        .modal-content { background: var(--card-bg); margin: 5% auto; padding: 20px; border-radius: 15px; width: 95%; max-width: 850px; position: relative; border: 1px solid var(--primary); }
         .modal-iframe { width: 100%; height: 70vh; border: none; border-radius: 10px; }
+
+        /* ستايل المودال الصغير لتعديل البروفايل */
+        .small-modal { max-width: 400px; text-align: center; }
+        .input-dark { width: 90%; padding: 10px; margin-bottom: 15px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 5px; font-family: inherit; }
 
         .admin-panel { display: none; background: rgba(46, 160, 67, 0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         input[type="text"], input[type="url"] { width: 95%; padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; margin-bottom: 10px; }
@@ -90,8 +105,7 @@
 
     <div id="sidebar" class="sidebar">
         <span class="close-sidebar" onclick="toggleSidebar()">&times;</span>
-        <div class="sidebar-auth" id="authSection">
-            </div>
+        <div class="sidebar-auth" id="authSection"></div>
 
         <div class="sidebar-section">
             <h2 class="sidebar-title">🏆 توب 10 الدفعة</h2>
@@ -129,11 +143,15 @@
         </div>
     </div>
 
-    <div class="ad-container" style="margin-top:20px;">
-        <script type="text/javascript">
-            atOptions = { 'key' : '2c561b19eb0e3bfa10d7c2d1509ed9a1', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
-        </script>
-        <script type="text/javascript" src="https://www.highperformanceformat.com/2c561b19eb0e3bfa10d7c2d1509ed9a1/invoke.js"></script>
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content small-modal">
+            <span style="color:var(--danger); cursor:pointer; font-size:35px; float:left; line-height: 20px;" onclick="document.getElementById('editProfileModal').style.display='none'">&times;</span>
+            <h3 style="color:var(--primary); margin-top: 0;">تعديل بياناتك ✏️</h3>
+            <p style="font-size: 12px; color: gray; margin-bottom: 15px;">عدل اسمك أو حط لينك صورة جديدة ليك عشان تنور اللوحة</p>
+            <input type="text" id="editName" class="input-dark" placeholder="اكتب اسمك هنا...">
+            <input type="url" id="editPhoto" class="input-dark" placeholder="رابط صورتك (اختياري)">
+            <button onclick="saveProfile()" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width:95%; font-weight:bold; margin-top: 10px;">حفظ التعديلات</button>
+        </div>
     </div>
 
     <div id="lectureModal" class="modal">
@@ -166,7 +184,7 @@
         let currentSubjectId = null;
         let watchHistory = JSON.parse(localStorage.getItem('ws_history')) || {};
 
-        // --- نظام تسجيل الدخول (Popup عشان يحل مشكلة الريفريش) ---
+        // --- نظام تسجيل الدخول (Popup) ---
         function signInWithGoogle() {
             auth.signInWithPopup(provider).catch((error) => {
                 console.error("خطأ في الدخول: ", error.message);
@@ -180,18 +198,22 @@
                 currentUser = user;
                 authSection.innerHTML = `
                     <div class="user-profile-side">
-                        <img src="${user.photoURL || 'https://via.placeholder.com/50'}" alt="user" onerror="this.src='https://via.placeholder.com/50'">
-                        <span>أهلاً، <b>${(user.displayName || "طالب").split(" ")[0]}</b></span>
-                        <button onclick="auth.signOut().then(()=>location.reload())" style="font-size:11px; background:none; color:var(--danger); border:none; cursor:pointer; text-decoration:underline;">خروج</button>
+                        <img src="${user.photoURL || 'https://via.placeholder.com/65'}" alt="user" onerror="this.src='https://via.placeholder.com/65'">
+                        <span style="font-size: 16px;">أهلاً، <b>${(user.displayName || "طالب")}</b></span>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <button onclick="openEditProfile()" style="font-size:12px; background:var(--primary); color:white; padding:5px 15px; border-radius:5px; border:none; cursor:pointer;">تعديل بروفايلي</button>
+                            <button onclick="auth.signOut().then(()=>location.reload())" style="font-size:12px; background:var(--danger); color:white; padding:5px 15px; border-radius:5px; border:none; cursor:pointer;">خروج</button>
+                        </div>
                     </div>`;
                 
-                // تسجيل بيانات الطالب في الداتابيز عشان يظهر في الدحيحة
+                // التأكد من تسجيله وإضافة وقت المذاكرة
                 db.collection("users").doc(user.uid).get().then(doc => {
                     if (!doc.exists) {
                         db.collection("users").doc(user.uid).set({ 
                             name: user.displayName || "طالب", 
                             photo: user.photoURL || "", 
-                            points: 0 
+                            points: 0,
+                            studyTime: 0 
                         });
                     }
                 });
@@ -201,24 +223,63 @@
             }
         });
 
-        // --- جلب البيانات ---
+        // --- تعديل البروفايل ---
+        function openEditProfile() {
+            if(!currentUser) return;
+            document.getElementById('editName').value = currentUser.displayName || '';
+            document.getElementById('editPhoto').value = currentUser.photoURL || '';
+            document.getElementById('editProfileModal').style.display = 'block';
+        }
+
+        function saveProfile() {
+            const newName = document.getElementById('editName').value;
+            const newPhoto = document.getElementById('editPhoto').value;
+            if(!newName) { alert("اكتب اسمك الأول يا بطل!"); return; }
+            
+            db.collection("users").doc(currentUser.uid).update({
+                name: newName,
+                photo: newPhoto
+            }).then(() => {
+                currentUser.updateProfile({ displayName: newName, photoURL: newPhoto }).then(() => {
+                    document.getElementById('editProfileModal').style.display = 'none';
+                    alert("تم حفظ التعديلات! عاش يا دحيح 💪");
+                    location.reload();
+                });
+            }).catch(e => alert("حصلت مشكلة في الحفظ: " + e.message));
+        }
+
+        // --- جلب البيانات وعمل الجدول الاحترافي ---
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); renderHistory(); }
 
         db.collection("users").orderBy("points", "desc").limit(10).onSnapshot(snap => {
             const list = document.getElementById('leaderboardList');
-            list.innerHTML = '';
+            let html = `<table class="lb-table">
+                            <tr>
+                                <th>المركز</th>
+                                <th style="text-align: right;">الاسم</th>
+                                <th>الوقت</th>
+                                <th>النقط</th>
+                            </tr>`;
             snap.forEach((doc, i) => {
                 const d = doc.data();
-                list.innerHTML += `
-                    <div class="leaderboard-item ${i < 3 ? 'top' : ''}">
-                        <div class="player-info">
-                            <span style="font-size:11px; color:gray;">#${i+1}</span>
-                            <img src="${d.photo || ''}" onerror="this.src='https://via.placeholder.com/25'">
+                let rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+                let rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<b>#${i+1}</b>`;
+                let mins = d.studyTime || 0;
+                let timeStr = mins > 60 ? `${Math.floor(mins/60)}س و ${mins%60}د` : `${mins} دقيقة`;
+                
+                html += `
+                    <tr class="${rankClass}">
+                        <td>${rankIcon}</td>
+                        <td class="lb-name">
+                            <img src="${d.photo || 'https://via.placeholder.com/30'}" onerror="this.src='https://via.placeholder.com/30'">
                             <span>${(d.name || "طالب").split(" ")[0]}</span>
-                        </div>
-                        <span style="color:var(--success); font-weight:bold;">${d.points || 0}</span>
-                    </div>`;
+                        </td>
+                        <td style="color:#8b949e;">${timeStr}</td>
+                        <td style="color:var(--success); font-weight:bold;">${d.points || 0}</td>
+                    </tr>`;
             });
+            html += `</table>`;
+            list.innerHTML = html;
         });
 
         db.collection("subjects").onSnapshot(snap => {
@@ -238,7 +299,7 @@
         function openSubject(id, name) { currentSubjectId = id; document.getElementById('homeView').style.display='none'; document.getElementById('insideFolder').style.display='block'; document.getElementById('currentSubjectTitle').innerText=name; renderLinks(); }
         function goBack() { currentSubjectId = null; document.getElementById('insideFolder').style.display='none'; document.getElementById('homeView').style.display='block'; renderSubjects(); }
 
-        // --- فتح المحاضرة وحساب الوقت ---
+        // --- فتح المحاضرة وحساب الوقت (نقط + وقت فعلي) ---
         function openLectureModal(url, title, idx) {
             if(!currentUser) { alert("سجل دخول الأول عشان تدخل الدوري!"); toggleSidebar(); return; }
             lectureStartTime = Date.now();
@@ -271,11 +332,21 @@
         function closeModal() {
             if(currentUser && lectureStartTime > 0) {
                 const mins = Math.floor((Date.now() - lectureStartTime) / 60000);
-                const earned = 5 + (mins * 2);
-                db.collection("users").doc(currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(earned) });
+                // لو قعد دقيقة أو أكتر، نجمعله النقط والوقت
+                if(mins >= 1) {
+                    const earned = 5 + (mins * 2);
+                    db.collection("users").doc(currentUser.uid).update({ 
+                        points: firebase.firestore.FieldValue.increment(earned),
+                        studyTime: firebase.firestore.FieldValue.increment(mins)
+                    });
+                } else {
+                    // نقطة تشجيعية لو قفل بسرعة
+                    db.collection("users").doc(currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
+                }
             }
             document.getElementById('lectureModal').style.display = 'none';
             lectureStartTime = 0;
+            document.getElementById('modalBody').innerHTML = '';
         }
 
         function toggleEye(event, url) {
