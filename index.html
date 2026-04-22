@@ -166,12 +166,11 @@
         let currentSubjectId = null;
         let watchHistory = JSON.parse(localStorage.getItem('ws_history')) || {};
 
-        // --- نظام تسجيل الدخول (Redirect لحل مشاكل الموبايل) ---
-        auth.getRedirectResult().catch(e => console.error(e));
-
+        // --- نظام تسجيل الدخول (Popup عشان يحل مشكلة الريفريش) ---
         function signInWithGoogle() {
-            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
-                return auth.signInWithRedirect(provider);
+            auth.signInWithPopup(provider).catch((error) => {
+                console.error("خطأ في الدخول: ", error.message);
+                alert("معلش حصلت مشكلة: " + error.message);
             });
         }
 
@@ -181,12 +180,20 @@
                 currentUser = user;
                 authSection.innerHTML = `
                     <div class="user-profile-side">
-                        <img src="${user.photoURL}" alt="user" onerror="this.src='https://via.placeholder.com/50'">
-                        <span>أهلاً، <b>${user.displayName.split(" ")[0]}</b></span>
+                        <img src="${user.photoURL || 'https://via.placeholder.com/50'}" alt="user" onerror="this.src='https://via.placeholder.com/50'">
+                        <span>أهلاً، <b>${(user.displayName || "طالب").split(" ")[0]}</b></span>
                         <button onclick="auth.signOut().then(()=>location.reload())" style="font-size:11px; background:none; color:var(--danger); border:none; cursor:pointer; text-decoration:underline;">خروج</button>
                     </div>`;
+                
+                // تسجيل بيانات الطالب في الداتابيز عشان يظهر في الدحيحة
                 db.collection("users").doc(user.uid).get().then(doc => {
-                    if (!doc.exists) db.collection("users").doc(user.uid).set({ name: user.displayName, photo: user.photoURL, points: 0 });
+                    if (!doc.exists) {
+                        db.collection("users").doc(user.uid).set({ 
+                            name: user.displayName || "طالب", 
+                            photo: user.photoURL || "", 
+                            points: 0 
+                        });
+                    }
                 });
             } else {
                 currentUser = null;
