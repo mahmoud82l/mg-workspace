@@ -7,6 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    
     <style>
         :root {
             --bg-color: #0d1117; --card-bg: #161b22; --primary: #58a6ff;
@@ -40,12 +41,12 @@
 
         /* جدول الدحيحة الجديد */
         .lb-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #161b22; border-radius: 8px; overflow: hidden; }
-        .lb-table th { background: #1c2128; color: var(--primary); padding: 10px 5px; border-bottom: 2px solid #30363d; }
+        .lb-table th { background: #1c2128; color: var(--primary); padding: 10px 5px; border-bottom: 2px solid #30363d; text-align: center; }
         .lb-table td { padding: 8px 5px; border-bottom: 1px solid #30363d; text-align: center; vertical-align: middle; }
         .lb-table tr:hover { background: rgba(88, 166, 255, 0.05); }
         
         .lb-name { display: flex; align-items: center; gap: 8px; text-align: right; justify-content: flex-start; padding-right: 5px; }
-        .lb-name img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; transition: 0.3s; }
+        .lb-name img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; transition: 0.3s; background: #fff; }
         
         /* إطارات الأبطال */
         .rank-1 .lb-name img { border: 2px solid var(--gold); box-shadow: 0 0 10px var(--gold); transform: scale(1.1); }
@@ -147,10 +148,14 @@
         <div class="modal-content small-modal">
             <span style="color:var(--danger); cursor:pointer; font-size:35px; float:left; line-height: 20px;" onclick="document.getElementById('editProfileModal').style.display='none'">&times;</span>
             <h3 style="color:var(--primary); margin-top: 0;">تعديل بياناتك ✏️</h3>
-            <p style="font-size: 12px; color: gray; margin-bottom: 15px;">عدل اسمك أو حط لينك صورة جديدة ليك عشان تنور اللوحة</p>
+            <p style="font-size: 12px; color: gray; margin-bottom: 15px;">عدل اسمك واختار صورتك من الجهاز</p>
+            
             <input type="text" id="editName" class="input-dark" placeholder="اكتب اسمك هنا...">
-            <input type="url" id="editPhoto" class="input-dark" placeholder="رابط صورتك (اختياري)">
-            <button onclick="saveProfile()" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width:95%; font-weight:bold; margin-top: 10px;">حفظ التعديلات</button>
+            
+            <div style="text-align: right; margin-bottom: 5px; color: gray; font-size: 12px; width: 90%; margin: 0 auto;">اختار صورة البروفايل (أقل من 1 ميجا):</div>
+            <input type="file" id="uploadPhoto" accept="image/*" class="input-dark" style="padding: 8px;">
+            
+            <button id="saveProfileBtn" onclick="saveProfile()" style="background:var(--success); color:white; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; width:95%; font-weight:bold; margin-top: 10px;">حفظ التعديلات</button>
         </div>
     </div>
 
@@ -184,6 +189,11 @@
         let currentSubjectId = null;
         let watchHistory = JSON.parse(localStorage.getItem('ws_history')) || {};
 
+        // جلب أول حرف من الاسم عشان لو معندوش صورة
+        function getInitialsImage(name) {
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&bold=true`;
+        }
+
         // --- نظام تسجيل الدخول (Popup) ---
         function signInWithGoogle() {
             auth.signInWithPopup(provider).catch((error) => {
@@ -196,18 +206,29 @@
             const authSection = document.getElementById('authSection');
             if (user) {
                 currentUser = user;
-                authSection.innerHTML = `
-                    <div class="user-profile-side">
-                        <img src="${user.photoURL || 'https://via.placeholder.com/65'}" alt="user" onerror="this.src='https://via.placeholder.com/65'">
-                        <span style="font-size: 16px;">أهلاً، <b>${(user.displayName || "طالب")}</b></span>
-                        <div style="display: flex; gap: 10px; margin-top: 5px;">
-                            <button onclick="openEditProfile()" style="font-size:12px; background:var(--primary); color:white; padding:5px 15px; border-radius:5px; border:none; cursor:pointer;">تعديل بروفايلي</button>
-                            <button onclick="auth.signOut().then(()=>location.reload())" style="font-size:12px; background:var(--danger); color:white; padding:5px 15px; border-radius:5px; border:none; cursor:pointer;">خروج</button>
-                        </div>
-                    </div>`;
                 
-                // التأكد من تسجيله وإضافة وقت المذاكرة
+                // جلب بيانات الطالب من الداتابيز عشان نجيب الصورة المرفوعة بنظام Base64
                 db.collection("users").doc(user.uid).get().then(doc => {
+                    let userData = doc.exists ? doc.data() : null;
+                    let displayImg = getInitialsImage(user.displayName || "طالب");
+
+                    // بنشوف هل مخزن صورته في الداتابيز ولا جوجل ولا نستخدم أول حرف
+                    if (userData && userData.photo && userData.photo.trim() !== '') {
+                        displayImg = userData.photo;
+                    } else if (user.photoURL && user.photoURL.trim() !== '') {
+                        displayImg = user.photoURL;
+                    }
+                    
+                    authSection.innerHTML = `
+                        <div class="user-profile-side">
+                            <img src="${displayImg}" alt="user" onerror="this.src='${getInitialsImage("U")}'">
+                            <span style="font-size: 16px;">أهلاً، <b>${(user.displayName || "طالب").split(" ")[0]}</b></span>
+                            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                <button onclick="openEditProfile()" style="font-size:12px; background:var(--primary); color:white; padding:5px 15px; border-radius:5px; border:none; cursor:pointer;">تعديل بروفايلي</button>
+                                <button onclick="auth.signOut().then(()=>location.reload())" style="font-size:12px; background:var(--danger); color:white; padding:5px 15px; border-radius:5px; border:none; cursor:pointer;">خروج</button>
+                            </div>
+                        </div>`;
+                    
                     if (!doc.exists) {
                         db.collection("users").doc(user.uid).set({ 
                             name: user.displayName || "طالب", 
@@ -223,32 +244,68 @@
             }
         });
 
-        // --- تعديل البروفايل ---
+        // --- تعديل البروفايل ورفع الصورة (بنظام Base64 المجاني) ---
         function openEditProfile() {
             if(!currentUser) return;
             document.getElementById('editName').value = currentUser.displayName || '';
-            document.getElementById('editPhoto').value = currentUser.photoURL || '';
+            document.getElementById('uploadPhoto').value = ''; 
             document.getElementById('editProfileModal').style.display = 'block';
         }
 
         function saveProfile() {
             const newName = document.getElementById('editName').value;
-            const newPhoto = document.getElementById('editPhoto').value;
-            if(!newName) { alert("اكتب اسمك الأول يا بطل!"); return; }
+            const fileInput = document.getElementById('uploadPhoto');
+            const file = fileInput.files[0];
+            const btn = document.getElementById('saveProfileBtn');
             
-            db.collection("users").doc(currentUser.uid).update({
-                name: newName,
-                photo: newPhoto
-            }).then(() => {
-                currentUser.updateProfile({ displayName: newName, photoURL: newPhoto }).then(() => {
-                    document.getElementById('editProfileModal').style.display = 'none';
-                    alert("تم حفظ التعديلات! عاش يا دحيح 💪");
-                    location.reload();
-                });
-            }).catch(e => alert("حصلت مشكلة في الحفظ: " + e.message));
+            if(!newName) { alert("اكتب اسمك يا بطل!"); return; }
+            
+            btn.innerText = "جاري الحفظ... ⏳";
+            btn.disabled = true;
+
+            // لو اختار صورة جديدة
+            if (file) {
+                // منع رفع صور حجمها أكبر من 1 ميجا عشان الداتابيز متتقلش
+                if (file.size > 1048576) {
+                    alert("الصورة مساحتها كبيرة جداً! اختار صورة أقل من 1 ميجا.");
+                    btn.innerText = "حفظ التعديلات";
+                    btn.disabled = false;
+                    return;
+                }
+
+                // تحويل الصورة لنص (Base64) وحفظها
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    const base64String = reader.result;
+                    db.collection("users").doc(currentUser.uid).update({
+                        name: newName,
+                        photo: base64String
+                    }).then(() => finishSave(newName, btn)).catch(e => showError(e, btn));
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // لو مرفعش صورة هيحدث الاسم بس
+                db.collection("users").doc(currentUser.uid).update({ name: newName })
+                  .then(() => finishSave(newName, btn))
+                  .catch(e => showError(e, btn));
+            }
         }
 
-        // --- جلب البيانات وعمل الجدول الاحترافي ---
+        function finishSave(newName, btn) {
+            currentUser.updateProfile({ displayName: newName }).then(() => {
+                document.getElementById('editProfileModal').style.display = 'none';
+                alert("تم حفظ التعديلات بنجاح! 💪");
+                location.reload();
+            });
+        }
+
+        function showError(e, btn) {
+            alert("حصلت مشكلة: " + e.message);
+            btn.innerText = "حفظ التعديلات";
+            btn.disabled = false;
+        }
+
+        // --- جلب البيانات وعمل الجدول ---
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); renderHistory(); }
 
         db.collection("users").orderBy("points", "desc").limit(10).onSnapshot(snap => {
@@ -260,23 +317,28 @@
                                 <th>الوقت</th>
                                 <th>النقط</th>
                             </tr>`;
-            snap.forEach((doc, i) => {
+            
+            let i = 0; 
+            snap.forEach((doc) => {
                 const d = doc.data();
                 let rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
                 let rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<b>#${i+1}</b>`;
                 let mins = d.studyTime || 0;
                 let timeStr = mins > 60 ? `${Math.floor(mins/60)}س و ${mins%60}د` : `${mins} دقيقة`;
                 
+                let userImg = d.photo && d.photo.trim() !== '' ? d.photo : getInitialsImage(d.name || "طالب");
+                
                 html += `
                     <tr class="${rankClass}">
                         <td>${rankIcon}</td>
                         <td class="lb-name">
-                            <img src="${d.photo || 'https://via.placeholder.com/30'}" onerror="this.src='https://via.placeholder.com/30'">
+                            <img src="${userImg}" onerror="this.src='${getInitialsImage("U")}'">
                             <span>${(d.name || "طالب").split(" ")[0]}</span>
                         </td>
                         <td style="color:#8b949e;">${timeStr}</td>
                         <td style="color:var(--success); font-weight:bold;">${d.points || 0}</td>
                     </tr>`;
+                i++;
             });
             html += `</table>`;
             list.innerHTML = html;
@@ -299,7 +361,7 @@
         function openSubject(id, name) { currentSubjectId = id; document.getElementById('homeView').style.display='none'; document.getElementById('insideFolder').style.display='block'; document.getElementById('currentSubjectTitle').innerText=name; renderLinks(); }
         function goBack() { currentSubjectId = null; document.getElementById('insideFolder').style.display='none'; document.getElementById('homeView').style.display='block'; renderSubjects(); }
 
-        // --- فتح المحاضرة وحساب الوقت (نقط + وقت فعلي) ---
+        // --- فتح المحاضرة وحساب الوقت ---
         function openLectureModal(url, title, idx) {
             if(!currentUser) { alert("سجل دخول الأول عشان تدخل الدوري!"); toggleSidebar(); return; }
             lectureStartTime = Date.now();
@@ -332,7 +394,6 @@
         function closeModal() {
             if(currentUser && lectureStartTime > 0) {
                 const mins = Math.floor((Date.now() - lectureStartTime) / 60000);
-                // لو قعد دقيقة أو أكتر، نجمعله النقط والوقت
                 if(mins >= 1) {
                     const earned = 5 + (mins * 2);
                     db.collection("users").doc(currentUser.uid).update({ 
@@ -340,7 +401,6 @@
                         studyTime: firebase.firestore.FieldValue.increment(mins)
                     });
                 } else {
-                    // نقطة تشجيعية لو قفل بسرعة
                     db.collection("users").doc(currentUser.uid).update({ points: firebase.firestore.FieldValue.increment(1) });
                 }
             }
