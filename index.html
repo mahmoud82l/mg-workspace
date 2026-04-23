@@ -101,7 +101,7 @@
         <iframe 
             srcdoc="<script type='text/javascript'>atOptions = { 'key' : '2c561b19eb0e3bfa10d7c2d1509ed9a1', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };</script><script type='text/javascript' src='https://www.highperformanceformat.com/2c561b19eb0e3bfa10d7c2d1509ed9a1/invoke.js'></script>" 
             width="320" height="50" frameborder="0" scrolling="no" 
-            sandbox="allow-scripts allow-popups">
+            sandbox="allow-scripts allow-popups allow-same-origin">
         </iframe>
     </div>
 
@@ -143,6 +143,14 @@
             </div>
             <div id="linksList"></div>
         </div>
+    </div>
+
+    <div class="ad-container" style="margin: 20px auto; display: flex; justify-content: center;">
+        <iframe 
+            srcdoc="<script type='text/javascript'>atOptions = { 'key' : '2c561b19eb0e3bfa10d7c2d1509ed9a1', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };</script><script type='text/javascript' src='https://www.highperformanceformat.com/2c561b19eb0e3bfa10d7c2d1509ed9a1/invoke.js'></script>" 
+            width="320" height="50" frameborder="0" scrolling="no" 
+            sandbox="allow-scripts allow-popups allow-same-origin">
+        </iframe>
     </div>
 
     <div id="editProfileModal" class="modal">
@@ -190,12 +198,10 @@
         let currentSubjectId = null;
         let watchHistory = JSON.parse(localStorage.getItem('ws_history')) || {};
 
-        // جلب أول حرف من الاسم عشان لو معندوش صورة
         function getInitialsImage(name) {
             return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&bold=true`;
         }
 
-        // --- نظام تسجيل الدخول (Popup) ---
         function signInWithGoogle() {
             auth.signInWithPopup(provider).catch((error) => {
                 console.error("خطأ في الدخول: ", error.message);
@@ -208,12 +214,10 @@
             if (user) {
                 currentUser = user;
                 
-                // جلب بيانات الطالب من الداتابيز عشان نجيب الصورة المرفوعة بنظام Base64
                 db.collection("users").doc(user.uid).get().then(doc => {
                     let userData = doc.exists ? doc.data() : null;
                     let displayImg = getInitialsImage(user.displayName || "طالب");
 
-                    // بنشوف هل مخزن صورته في الداتابيز ولا جوجل ولا نستخدم أول حرف
                     if (userData && userData.photo && userData.photo.trim() !== '') {
                         displayImg = userData.photo;
                     } else if (user.photoURL && user.photoURL.trim() !== '') {
@@ -245,7 +249,6 @@
             }
         });
 
-        // --- تعديل البروفايل ورفع الصورة (بنظام Base64 المجاني) ---
         function openEditProfile() {
             if(!currentUser) return;
             document.getElementById('editName').value = currentUser.displayName || '';
@@ -264,9 +267,7 @@
             btn.innerText = "جاري الحفظ... ⏳";
             btn.disabled = true;
 
-            // لو اختار صورة جديدة
             if (file) {
-                // منع رفع صور حجمها أكبر من 1 ميجا عشان الداتابيز متتقلش
                 if (file.size > 1048576) {
                     alert("الصورة مساحتها كبيرة جداً! اختار صورة أقل من 1 ميجا.");
                     btn.innerText = "حفظ التعديلات";
@@ -274,7 +275,6 @@
                     return;
                 }
 
-                // تحويل الصورة لنص (Base64) وحفظها
                 const reader = new FileReader();
                 reader.onloadend = function() {
                     const base64String = reader.result;
@@ -285,7 +285,6 @@
                 };
                 reader.readAsDataURL(file);
             } else {
-                // لو مرفعش صورة هيحدث الاسم بس
                 db.collection("users").doc(currentUser.uid).update({ name: newName })
                   .then(() => finishSave(newName, btn))
                   .catch(e => showError(e, btn));
@@ -306,7 +305,6 @@
             btn.disabled = false;
         }
 
-        // --- جلب البيانات وعمل الجدول ---
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); renderHistory(); }
 
         db.collection("users").orderBy("points", "desc").limit(10).onSnapshot(snap => {
@@ -362,7 +360,6 @@
         function openSubject(id, name) { currentSubjectId = id; document.getElementById('homeView').style.display='none'; document.getElementById('insideFolder').style.display='block'; document.getElementById('currentSubjectTitle').innerText=name; renderLinks(); }
         function goBack() { currentSubjectId = null; document.getElementById('insideFolder').style.display='none'; document.getElementById('homeView').style.display='block'; renderSubjects(); }
 
-        // --- فتح المحاضرة وحساب الوقت ---
         function openLectureModal(url, title, idx) {
             if(!currentUser) { alert("سجل دخول الأول عشان تدخل الدوري!"); toggleSidebar(); return; }
             lectureStartTime = Date.now();
